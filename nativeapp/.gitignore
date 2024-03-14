@@ -1,7 +1,0 @@
-.bazelrc
-/bazel-*
-/out
-
-** Editors **
-*.swp
-*.idea
