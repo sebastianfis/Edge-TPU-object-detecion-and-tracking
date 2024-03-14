@@ -91,5 +91,8 @@ mobilenet_ssd_v1_coco_quant_postprocess_edgetpu.tflite, coco_labels.txt
 mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite, coco_labels.txt
 mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite, coco_labels.txt
 ```
+## Known issues
 
+See:
 
+https://github.com/google-coral/examples-camera/issues/76
