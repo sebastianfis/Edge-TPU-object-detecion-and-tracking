@@ -112,8 +112,8 @@ def main():
         cv2_im = append_objs_to_img(cv2_im, inference_size, objs, labels)
 
         # cv2.imshow('frame', cv2_im)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     break
 
     cap.release()
     # cv2.destroyAllWindows()
