@@ -28,6 +28,7 @@ python3 detect.py \
 """
 import argparse
 import cv2
+import numpy as np
 import os
 import logging
 from imutils.video import VideoStream
