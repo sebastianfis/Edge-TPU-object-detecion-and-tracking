@@ -17,13 +17,11 @@
 TEST_DATA=../all_models
 
 Run face detection model:
-python3 detect.py \
-  --model ${TEST_DATA}/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite
+python3 opencv/detect_server.py --model all_models/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite
 
 Run coco model:
-python3 detect.py \
-  --model ${TEST_DATA}/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite \
-  --labels ${TEST_DATA}/coco_labels.txt
+python3 opencv/detect_server.py --model all_models/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite \
+  --labels all_models/coco_labels.txt
 
 """
 import argparse
