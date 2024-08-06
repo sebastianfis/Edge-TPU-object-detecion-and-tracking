@@ -159,7 +159,7 @@ def append_objs_to_img(cv2_im, inference_size, objs, labels):
 
         percent = int(100 * obj.score)
         label = '{}% {}'.format(percent, labels.get(obj.id, obj.id))
-
+        logger.info(label)
         cv2_im = cv2.rectangle(cv2_im, (x0, y0), (x1, y1), (0, 255, 0), 2)
         cv2_im = cv2.putText(cv2_im, label, (x0, y0 + 30),
                              cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 2)
