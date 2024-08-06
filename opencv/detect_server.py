@@ -66,7 +66,9 @@ def run_server(interpreter, labels, args):
     # grab global references to the video stream, output frame, and
     # lock variables
     global outputFrame, lock
+
     # initialize the motion detector and the total number of frames
+    inference_size = input_size(interpreter)
     cam = cv2.VideoCapture(args.camera_idx)
     assert cam is not None
     while True:
@@ -77,7 +79,6 @@ def run_server(interpreter, labels, args):
                 break
             else:
                 timestamp = time.time()
-                inference_size = input_size(interpreter)
                 cv2_im_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 cv2_im_rgb = cv2.resize(cv2_im_rgb, inference_size)
                 run_inference(interpreter, cv2_im_rgb.tobytes())
@@ -89,13 +90,10 @@ def run_server(interpreter, labels, args):
                 cv2.putText(image, datetime.datetime.now().strftime(
                     "%A %d %B %Y %I:%M:%S%p"), (10, image.shape[0] - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-
                 with lock:
                     outputFrame = frame.copy()
-
         except KeyboardInterrupt:
             break
-
     cam.release()
 
 
@@ -104,6 +102,8 @@ def main():
     default_model = 'mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite'
     default_labels = 'coco_labels_de.txt'
     parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--ip", type=str, default='0.0.0.0', help="ip address of the device")
+    parser.add_argument("-o", "--port", type=int, default='4664', help="port number of the server (1024 to 65535)")
     parser.add_argument('--model', help='.tflite model path',
                         default=os.path.join(default_model_dir, default_model))
     parser.add_argument('--labels', help='label file path',
@@ -112,7 +112,7 @@ def main():
                         help='number of categories with highest score to display')
     parser.add_argument('--camera_idx', type=int, help='Index of which video source to use. ', default=1)
     parser.add_argument('--threshold', type=float, default=0.5,
-                        help='getector score threshold')
+                        help='detector score threshold')
     args = parser.parse_args()
 
     print('Loading {} with {} labels.'.format(args.model, args.labels))
@@ -121,7 +121,7 @@ def main():
     labels = read_label_file(args.labels)
     inference_size = input_size(interpreter)
 
-    t = threading.Thread(target=run_server, args=(interpreter, labels, inference_size, args.device))
+    t = threading.Thread(target=run_server, args=(interpreter, labels, args))
     t.daemon = True
     t.start()
     # start the flask app
