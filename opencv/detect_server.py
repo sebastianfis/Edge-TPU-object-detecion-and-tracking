@@ -178,7 +178,7 @@ def append_objs_to_img(cv2_im, inference_size, objs, labels, trackerFlag, trdata
     height, width, channels = cv2_im.shape
     inf_w, inf_h = inference_size
     scale_x, scale_y = width / inference_size[0], height / inference_size[1]
-    if trackerFlag(np.array(trdata)).size:
+    if trackerFlag and (np.array(trdata)).size:
         for td in trdata:
             x0, y0, x1, y1, trackID = td[0].item(), td[1].item(
             ), td[2].item(), td[3].item(), td[4].item()
