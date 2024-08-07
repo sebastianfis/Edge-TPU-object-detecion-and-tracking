@@ -35,9 +35,9 @@ import cv2
 import argparse
 import logging
 import numpy as np
+import collections
 
-from pycoral.adapters.common import input_size
-from pycoral.adapters.detect import get_objects, Object
+from pycoral.adapters.common import input_size, output_tensor
 from pycoral.utils.dataset import read_label_file
 from pycoral.utils.edgetpu import make_interpreter
 from pycoral.utils.edgetpu import run_inference
@@ -59,10 +59,38 @@ app = Flask(__name__)
 time.sleep(2.0)
 
 
+Object = collections.namedtuple('Object', ['id', 'score', 'bbox'])
+
+
+class BBox(collections.namedtuple('BBox', ['xmin', 'ymin', 'xmax', 'ymax'])):
+    """Bounding box.
+    Represents a rectangle which sides are either vertical or horizontal, parallel
+    to the x or y axis.
+    """
+    __slots__ = ()
+
 @app.route("/")
 def index():
     # return the rendered template
     return render_template("index.html")
+
+
+def get_output(interpreter, score_threshold, top_k):
+    """Returns list of detected objects."""
+    boxes = output_tensor(interpreter, 0)
+    category_ids = output_tensor(interpreter, 1)
+    scores = output_tensor(interpreter, 2)
+
+    def make(i):
+        ymin, xmin, ymax, xmax = boxes[i]
+        return Object(
+            id=int(category_ids[i]),
+            score=scores[i],
+            bbox=BBox(xmin=np.maximum(0.0, xmin),
+                      ymin=np.maximum(0.0, ymin),
+                      xmax=np.minimum(1.0, xmax),
+                      ymax=np.minimum(1.0, ymax)))
+    return [make(i) for i in range(top_k) if scores[i] >= score_threshold]
 
 
 def run_server(interpreter, labels, args):
@@ -89,7 +117,8 @@ def run_server(interpreter, labels, args):
                 cv2_im_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 cv2_im_rgb = cv2.resize(cv2_im_rgb, inference_size)
                 run_inference(interpreter, cv2_im_rgb.tobytes())
-                objs = get_objects(interpreter, args.threshold)[:args.top_k]
+                objs = get_output(interpreter, args.threshold, args.top_k)
+                # objs = get_objects(interpreter, args.threshold)[:args.top_k]
                 trdata = []
                 trackerFlag = False
                 if mot_tracker is not None:
@@ -191,13 +220,7 @@ def append_objs_to_img(cv2_im, inference_size, objs, labels, trackerFlag, trdata
                     overlap = area
                     obj = ob
 
-            # Relative coordinates.
-            x, y, w, h = x0, y0, x1 - x0, y1 - y0
-            # Absolute coordinates, input tensor space.
-            x, y, w, h = int(x * inf_w), int(y *
-                                             inf_h), int(w * inf_w), int(h * inf_h)
-            # Scale to source coordinate space.
-            x, y, w, h = x * scale_x, y * scale_y, w * scale_x, h * scale_y
+            x0, y0, x1, y1 = int(x0 * scale_x), int(y0 * scale_y), int(x1 * scale_x), int(y1 * scale_y)
             percent = int(100 * obj.score)
             label = '{}% {} ID:{}'.format(
                 percent, labels.get(obj.id, obj.id), int(trackID))
@@ -206,9 +229,8 @@ def append_objs_to_img(cv2_im, inference_size, objs, labels, trackerFlag, trdata
                                  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
     else:
         for obj in objs:
-            bbox = obj.bbox.scale(scale_x, scale_y)
-            x0, y0 = int(bbox.xmin), int(bbox.ymin)
-            x1, y1 = int(bbox.xmax), int(bbox.ymax)
+            x0, y0, x1, y1 = list(obj.bbox)
+            x0, y0, x1, y1 = int(x0 * scale_x), int(y0 * scale_y), int(x1 * scale_x), int(y1 * scale_y)
 
             percent = int(100 * obj.score)
             label = '{}% {}'.format(percent, labels.get(obj.id, obj.id))
