@@ -21,13 +21,13 @@ if grep -s -q "Mendel" /etc/os-release; then
     echo "You must upgrade to Mendel 4.0 or higher."
     exit 1
   fi
-  sudo apt install python3-opencv
+  sudo apt install python3-opencv-headless
 elif grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
   RASPBIAN=$(grep VERSION_ID /etc/os-release | sed 's/VERSION_ID="\([0-9]\+\)"/\1/')
   echo "Raspbian Version: $RASPBIAN"
   if [[ "$RASPBIAN" -ge "10" ]]; then
     # Lock to version due to bug: https://github.com/piwheels/packages/issues/59
-    sudo pip3 install opencv-contrib-python==4.1.0.25
+    sudo pip3 install opencv-contrib-python==4.1.0.25 filterpy==1.1.0 lap==0.4.0
     sudo apt-get -y install libjasper1 libhdf5-1* libqtgui4 libatlas-base-dev libqt4-test
   else
     echo "For Raspbian versions older than Buster (10) you have to build OpenCV yourself"
@@ -37,3 +37,23 @@ elif grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
 else
   sudo apt install python3-opencv
 fi
+
+# Install Tracker Dependencies
+echo
+echo "Installing tracker dependencies."
+echo
+echo "Note that the trackers have their own licensing, many of which
+are not Apache. Care should be taken if using a tracker with restrictive
+licenses for end applications."
+
+read -p "Install SORT (GPLv3)? " -n 1 -r
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    wget https://github.com/abewley/sort/archive/master.zip -O sort.zip
+    unzip sort.zip -d ../third_party
+    rm sort.zip
+    sudo apt install python3-skimage
+    sudo apt install python3-dev
+    python3 -m pip install -r requirements_for_sort_tracker.txt
+fi
+echo

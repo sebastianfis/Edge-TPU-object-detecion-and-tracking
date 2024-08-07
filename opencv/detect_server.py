@@ -34,15 +34,18 @@ import os
 import cv2
 import argparse
 import logging
+import numpy as np
 
 from pycoral.adapters.common import input_size
-from pycoral.adapters.detect import get_objects
+from pycoral.adapters.detect import get_objects, Object
 from pycoral.utils.dataset import read_label_file
 from pycoral.utils.edgetpu import make_interpreter
 from pycoral.utils.edgetpu import run_inference
+from tracker import ObjectTracker
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 # initialize the output frame and a lock used to ensure thread-safe
 # exchanges of the output frames (useful when multiple browsers/tabs
@@ -70,6 +73,10 @@ def run_server(interpreter, labels, args):
     # initialize the motion detector and the total number of frames
     inference_size = input_size(interpreter)
     cam = cv2.VideoCapture(args.camera_idx)
+    if args.tracker is not None:
+        mot_tracker = ObjectTracker(args.tracker).trackerObject.mot_tracker
+    else:
+        mot_tracker = None
     assert cam is not None
     while True:
         try:
@@ -83,7 +90,24 @@ def run_server(interpreter, labels, args):
                 cv2_im_rgb = cv2.resize(cv2_im_rgb, inference_size)
                 run_inference(interpreter, cv2_im_rgb.tobytes())
                 objs = get_objects(interpreter, args.threshold)[:args.top_k]
-                frame = append_objs_to_img(image, inference_size, objs, labels)
+                trdata = []
+                trackerFlag = False
+                if mot_tracker is not None:
+                    detections = []  # np.array([])
+                    for n in range(0, len(objs)):
+                        element = []  # np.array([])
+                        element.append(objs[n].bbox.xmin)
+                        element.append(objs[n].bbox.ymin)
+                        element.append(objs[n].bbox.xmax)
+                        element.append(objs[n].bbox.ymax)
+                        element.append(objs[n].score)  # print('element= ',element)
+                        detections.append(element)  # print('dets: ',dets)
+                    # convert to numpy array #      print('npdets: ',dets)
+                    detections = np.array(detections)
+                    if detections.any():
+                        trdata = mot_tracker.update(detections)
+                        trackerFlag = True
+                frame = append_objs_to_img(image, inference_size, objs, labels, trackerFlag, trdata)
 
                 tinference = time.time() - timestamp
                 logger.info("Frame done in {}".format(tinference))
@@ -113,14 +137,15 @@ def main():
     parser.add_argument('--camera_idx', type=int, help='Index of which video source to use. ', default=1)
     parser.add_argument('--threshold', type=float, default=0.5,
                         help='detector score threshold')
+    parser.add_argument('--tracker', help='Name of the Object Tracker To be used.',
+                        default=None,
+                        choices=[None, 'sort'])
     args = parser.parse_args()
 
     print('Loading {} with {} labels.'.format(args.model, args.labels))
     interpreter = make_interpreter(args.model)
     interpreter.allocate_tensors()
     labels = read_label_file(args.labels)
-    inference_size = input_size(interpreter)
-
     t = threading.Thread(target=run_server, args=(interpreter, labels, args))
     t.daemon = True
     t.start()
@@ -149,20 +174,48 @@ def generate():
                bytearray(encodedImage) + b'\r\n')
 
 
-def append_objs_to_img(cv2_im, inference_size, objs, labels):
+def append_objs_to_img(cv2_im, inference_size, objs, labels, trackerFlag, trdata):
     height, width, channels = cv2_im.shape
+    inf_w, inf_h = inference_size
     scale_x, scale_y = width / inference_size[0], height / inference_size[1]
-    for obj in objs:
-        bbox = obj.bbox.scale(scale_x, scale_y)
-        x0, y0 = int(bbox.xmin), int(bbox.ymin)
-        x1, y1 = int(bbox.xmax), int(bbox.ymax)
+    if trackerFlag(np.array(trdata)).size:
+        for td in trdata:
+            x0, y0, x1, y1, trackID = td[0].item(), td[1].item(
+            ), td[2].item(), td[3].item(), td[4].item()
+            overlap = 0
+            for ob in objs:
+                dx0, dy0, dx1, dy1 = ob.bbox.xmin.item(), ob.bbox.ymin.item(
+                ), ob.bbox.xmax.item(), ob.bbox.ymax.item()
+                area = (min(dx1, x1) - max(dx0, x0)) * (min(dy1, y1) - max(dy0, y0))
+                if (area > overlap):
+                    overlap = area
+                    obj = ob
 
-        percent = int(100 * obj.score)
-        label = '{}% {}'.format(percent, labels.get(obj.id, obj.id))
-        logger.info(label)
-        cv2_im = cv2.rectangle(cv2_im, (x0, y0), (x1, y1), (0, 255, 0), 2)
-        cv2_im = cv2.putText(cv2_im, label, (x0, y0 + 30),
-                             cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 2)
+            # Relative coordinates.
+            x, y, w, h = x0, y0, x1 - x0, y1 - y0
+            # Absolute coordinates, input tensor space.
+            x, y, w, h = int(x * inf_w), int(y *
+                                             inf_h), int(w * inf_w), int(h * inf_h)
+            # Scale to source coordinate space.
+            x, y, w, h = x * scale_x, y * scale_y, w * scale_x, h * scale_y
+            percent = int(100 * obj.score)
+            label = '{}% {} ID:{}'.format(
+                percent, labels.get(obj.id, obj.id), int(trackID))
+            cv2_im = cv2.rectangle(cv2_im, (x0, y0), (x1, y1), (0, 255, 0), 2)
+            cv2_im = cv2.putText(cv2_im, label, (x0, y0 + 30),
+                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+    else:
+        for obj in objs:
+            bbox = obj.bbox.scale(scale_x, scale_y)
+            x0, y0 = int(bbox.xmin), int(bbox.ymin)
+            x1, y1 = int(bbox.xmax), int(bbox.ymax)
+
+            percent = int(100 * obj.score)
+            label = '{}% {}'.format(percent, labels.get(obj.id, obj.id))
+            logger.info(label)
+            cv2_im = cv2.rectangle(cv2_im, (x0, y0), (x1, y1), (0, 255, 0), 2)
+            cv2_im = cv2.putText(cv2_im, label, (x0, y0 + 30),
+                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
     return cv2_im
 
 
