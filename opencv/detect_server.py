@@ -60,45 +60,10 @@ app = Flask(__name__)
 time.sleep(2.0)
 
 
-#Object = collections.namedtuple('Object', ['id', 'score', 'bbox'])
-
-
-# class BBox(collections.namedtuple('BBox', ['xmin', 'ymin', 'xmax', 'ymax'])):
-#     """Bounding box.
-#     Represents a rectangle which sides are either vertical or horizontal, parallel
-#     to the x or y axis.
-#     """
-#     __slots__ = ()
-
 @app.route("/")
 def index():
     # return the rendered template
     return render_template("index.html")
-
-
-# def get_output(interpreter, score_threshold, top_k):
-#     """Returns list of detected objects."""
-#     boxes = output_tensor(interpreter, 0)
-#     category_ids = output_tensor(interpreter, 1)
-#     scores = output_tensor(interpreter, 2)
-#
-#     def make(i):
-#         ymin, xmin, ymax, xmax = boxes[i]
-#         return Object(
-#             id=int(category_ids[i]),
-#             score=scores[i],
-#             bbox=BBox(xmin=np.maximum(0.0, xmin),
-#                       ymin=np.maximum(0.0, ymin),
-#                       xmax=np.minimum(1.0, xmax),
-#                       ymax=np.minimum(1.0, ymax)))
-#     #FIXME:   File "opencv/detect_server.py", line 120, in run_server
-#     # objs = get_output(interpreter, args.threshold, args.top_k)
-#     # File "opencv/detect_server.py", line 93, in get_output
-#     # return [make(i) for i in range(top_k) if scores[i] >= score_threshold]
-#     # File "opencv/detect_server.py", line 93, in <listcomp>
-#     # return [make(i) for i in range(top_k) if scores[i] >= score_threshold]
-#     # ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
-#     return [make(i) for i in range(top_k) if scores[i] >= score_threshold]
 
 
 def run_server(interpreter, labels, args):
@@ -222,7 +187,7 @@ def append_objs_to_img(cv2_im, inference_size, objs, labels, trackerFlag, trdata
             for ob in objs:
                 dx0, dy0, dx1, dy1 = ob.bbox.xmin, ob.bbox.ymin, ob.bbox.xmax, ob.bbox.ymax
                 area = (min(dx1, x1) - max(dx0, x0)) * (min(dy1, y1) - max(dy0, y0))
-                if (area > overlap):
+                if area > overlap:
                     overlap = area
                     obj = ob
 
