@@ -37,7 +37,8 @@ import logging
 import numpy as np
 import collections
 
-from pycoral.adapters.common import input_size, output_tensor, Object, BBox
+from pycoral.adapters.common import input_size, output_tensor
+from pycoral.adapters.detect import Object, BBox
 from pycoral.utils.dataset import read_label_file
 from pycoral.utils.edgetpu import make_interpreter
 from pycoral.utils.edgetpu import run_inference
