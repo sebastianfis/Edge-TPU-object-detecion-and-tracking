@@ -230,8 +230,9 @@ def append_objs_to_img(cv2_im, inference_size, objs, labels, trackerFlag, trdata
             percent = int(100 * obj.score)
             label = '{}% {} ID:{}'.format(
                 percent, labels.get(obj.id, obj.id), int(trackID))
+            logger.info(label)
             cv2_im = cv2.rectangle(cv2_im, (x0, y0), (x1, y1), (0, 255, 0), 2)
-            cv2_im = cv2.putText(cv2_im, label, (x0, y0 + 30),
+            cv2_im = cv2.putText(cv2_im, label, (x0, y0 + 15),
                                  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
     else:
         for obj in objs:
@@ -240,9 +241,9 @@ def append_objs_to_img(cv2_im, inference_size, objs, labels, trackerFlag, trdata
 
             percent = int(100 * obj.score)
             label = '{}% {}'.format(percent, labels.get(obj.id, obj.id))
-            logger.info(label)
+
             cv2_im = cv2.rectangle(cv2_im, (x0, y0), (x1, y1), (0, 255, 0), 2)
-            cv2_im = cv2.putText(cv2_im, label, (x0, y0 + 30),
+            cv2_im = cv2.putText(cv2_im, label, (x0, y0 + 15),
                                  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
     return cv2_im
 
