@@ -159,7 +159,7 @@ def run_server(interpreter, labels, args):
 
 
 def main():
-    default_model_dir = '../all_models'
+    default_model_dir = 'all_models'
     default_model = 'spaghettinet_l_edgetpu.tflite'
     default_labels = 'coco_labels_de.txt'
     parser = argparse.ArgumentParser()
