@@ -160,7 +160,7 @@ def run_server(interpreter, labels, args):
 
 def main():
     default_model_dir = '../all_models'
-    default_model = 'mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite'
+    default_model = 'spaghettinet_l_edgetpu.tflite'
     default_labels = 'coco_labels_de.txt'
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--ip", type=str, default='0.0.0.0', help="ip address of the device")
