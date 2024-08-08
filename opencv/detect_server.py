@@ -37,7 +37,7 @@ import logging
 import numpy as np
 import collections
 
-from pycoral.adapters.common import input_size, output_tensor
+from pycoral.adapters.common import input_size, output_tensor, Object, BBox
 from pycoral.utils.dataset import read_label_file
 from pycoral.utils.edgetpu import make_interpreter
 from pycoral.utils.edgetpu import run_inference
@@ -59,15 +59,15 @@ app = Flask(__name__)
 time.sleep(2.0)
 
 
-Object = collections.namedtuple('Object', ['id', 'score', 'bbox'])
+#Object = collections.namedtuple('Object', ['id', 'score', 'bbox'])
 
 
-class BBox(collections.namedtuple('BBox', ['xmin', 'ymin', 'xmax', 'ymax'])):
-    """Bounding box.
-    Represents a rectangle which sides are either vertical or horizontal, parallel
-    to the x or y axis.
-    """
-    __slots__ = ()
+# class BBox(collections.namedtuple('BBox', ['xmin', 'ymin', 'xmax', 'ymax'])):
+#     """Bounding box.
+#     Represents a rectangle which sides are either vertical or horizontal, parallel
+#     to the x or y axis.
+#     """
+#     __slots__ = ()
 
 @app.route("/")
 def index():
@@ -75,22 +75,29 @@ def index():
     return render_template("index.html")
 
 
-def get_output(interpreter, score_threshold, top_k):
-    """Returns list of detected objects."""
-    boxes = output_tensor(interpreter, 0)
-    category_ids = output_tensor(interpreter, 1)
-    scores = output_tensor(interpreter, 2)
-
-    def make(i):
-        ymin, xmin, ymax, xmax = boxes[i]
-        return Object(
-            id=int(category_ids[i]),
-            score=scores[i],
-            bbox=BBox(xmin=np.maximum(0.0, xmin),
-                      ymin=np.maximum(0.0, ymin),
-                      xmax=np.minimum(1.0, xmax),
-                      ymax=np.minimum(1.0, ymax)))
-    return [make(i) for i in range(top_k) if scores[i] >= score_threshold]
+# def get_output(interpreter, score_threshold, top_k):
+#     """Returns list of detected objects."""
+#     boxes = output_tensor(interpreter, 0)
+#     category_ids = output_tensor(interpreter, 1)
+#     scores = output_tensor(interpreter, 2)
+#
+#     def make(i):
+#         ymin, xmin, ymax, xmax = boxes[i]
+#         return Object(
+#             id=int(category_ids[i]),
+#             score=scores[i],
+#             bbox=BBox(xmin=np.maximum(0.0, xmin),
+#                       ymin=np.maximum(0.0, ymin),
+#                       xmax=np.minimum(1.0, xmax),
+#                       ymax=np.minimum(1.0, ymax)))
+#     #FIXME:   File "opencv/detect_server.py", line 120, in run_server
+#     # objs = get_output(interpreter, args.threshold, args.top_k)
+#     # File "opencv/detect_server.py", line 93, in get_output
+#     # return [make(i) for i in range(top_k) if scores[i] >= score_threshold]
+#     # File "opencv/detect_server.py", line 93, in <listcomp>
+#     # return [make(i) for i in range(top_k) if scores[i] >= score_threshold]
+#     # ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+#     return [make(i) for i in range(top_k) if scores[i] >= score_threshold]
 
 
 def run_server(interpreter, labels, args):
@@ -117,8 +124,8 @@ def run_server(interpreter, labels, args):
                 cv2_im_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 cv2_im_rgb = cv2.resize(cv2_im_rgb, inference_size)
                 run_inference(interpreter, cv2_im_rgb.tobytes())
-                objs = get_output(interpreter, args.threshold, args.top_k)
-                # objs = get_objects(interpreter, args.threshold)[:args.top_k]
+                # objs = get_output(interpreter, args.threshold, args.top_k)
+                objs = get_objects(interpreter, args.threshold)[:args.top_k]
                 trdata = []
                 trackerFlag = False
                 if mot_tracker is not None:
