@@ -213,7 +213,6 @@ def generate():
 
 def append_objs_to_img(cv2_im, inference_size, objs, labels, trackerFlag, trdata):
     height, width, channels = cv2_im.shape
-    inf_w, inf_h = inference_size
     scale_x, scale_y = width / inference_size[0], height / inference_size[1]
     if trackerFlag and (np.array(trdata)).size:
         for td in trdata:
@@ -221,8 +220,7 @@ def append_objs_to_img(cv2_im, inference_size, objs, labels, trackerFlag, trdata
             ), td[2].item(), td[3].item(), td[4].item()
             overlap = 0
             for ob in objs:
-                dx0, dy0, dx1, dy1 = ob.bbox.xmin.item(), ob.bbox.ymin.item(
-                ), ob.bbox.xmax.item(), ob.bbox.ymax.item()
+                dx0, dy0, dx1, dy1 = ob.bbox.xmin, ob.bbox.ymin, ob.bbox.xmax, ob.bbox.ymax
                 area = (min(dx1, x1) - max(dx0, x0)) * (min(dy1, y1) - max(dy0, y0))
                 if (area > overlap):
                     overlap = area
