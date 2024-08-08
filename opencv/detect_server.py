@@ -23,6 +23,10 @@ Run coco model:
 python3 opencv/detect_server.py --model all_models/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite \
   --labels all_models/coco_labels.txt
 
+Run model with tracking:
+python3 opencv/detect_server.py --model all_models/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite \
+  --labels all_models/coco_labels.txt --tracking sort
+
 """
 from flask import Response
 from flask import Flask
@@ -35,7 +39,6 @@ import cv2
 import argparse
 import logging
 import numpy as np
-import collections
 
 from pycoral.adapters.common import input_size, output_tensor
 from pycoral.adapters.detect import Object, BBox, get_objects
