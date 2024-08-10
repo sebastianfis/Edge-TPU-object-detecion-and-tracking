@@ -4,14 +4,14 @@ Output: tflite_models/spaghettinet_edgetpu_l_optimized_nms_edgetpu.tflite
 
 Operator                       Count      Status
 
-MAX_POOL_2D                    3          Mapped to Edge TPU
-LOGISTIC                       1          Mapped to Edge TPU
-CONCATENATION                  7          Mapped to Edge TPU
-RESHAPE                        11         Mapped to Edge TPU
-STRIDED_SLICE                  10         Mapped to Edge TPU
-RESIZE_NEAREST_NEIGHBOR        3          Mapped to Edge TPU
-SLICE                          19         Mapped to Edge TPU
-DEPTHWISE_CONV_2D              43         Mapped to Edge TPU
-CONV_2D                        107        Mapped to Edge TPU
 CUSTOM                         1          Operation is working on an unsupported data type
 ADD                            31         Mapped to Edge TPU
+MAX_POOL_2D                    3          Mapped to Edge TPU
+LOGISTIC                       1          Mapped to Edge TPU
+CONV_2D                        107        Mapped to Edge TPU
+SLICE                          19         Mapped to Edge TPU
+RESIZE_NEAREST_NEIGHBOR        3          Mapped to Edge TPU
+DEPTHWISE_CONV_2D              43         Mapped to Edge TPU
+CONCATENATION                  7          Mapped to Edge TPU
+STRIDED_SLICE                  10         Mapped to Edge TPU
+RESHAPE                        11         Mapped to Edge TPU
