@@ -41,7 +41,7 @@ import logging
 import numpy as np
 
 from pycoral.adapters.common import input_size, output_tensor
-from pycoral.adapters.detect import Object, BBox, get_objects
+from pycoral.adapters.detect import get_objects
 from pycoral.utils.dataset import read_label_file
 from pycoral.utils.edgetpu import make_interpreter
 from pycoral.utils.edgetpu import run_inference
@@ -82,6 +82,9 @@ def run_server(interpreter, labels, args):
     else:
         mot_tracker = None
     assert cam is not None
+    _, cv2_im = cam.read()
+    height, width, channels = cv2_im.shape
+    scale_x, scale_y = width / inference_size[0], height / inference_size[1]
     while True:
         try:
             res, image = cam.read()
@@ -93,7 +96,6 @@ def run_server(interpreter, labels, args):
                 cv2_im_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 cv2_im_rgb = cv2.resize(cv2_im_rgb, inference_size)
                 run_inference(interpreter, cv2_im_rgb.tobytes())
-                # objs = get_output(interpreter, args.threshold, args.top_k)
                 objs = get_objects(interpreter, args.threshold)[:args.top_k]
                 trdata = []
                 trackerFlag = False
@@ -112,7 +114,7 @@ def run_server(interpreter, labels, args):
                     if detections.any():
                         trdata = mot_tracker.update(detections)
                         trackerFlag = True
-                frame = append_objs_to_img(image, inference_size, objs, labels, trackerFlag, trdata)
+                frame = append_objs_to_img(image, scale_x, scale_y, objs, labels, trackerFlag, trdata)
 
                 tinference = time.time() - timestamp
                 logger.info("Frame done in {}".format(tinference))
@@ -179,9 +181,7 @@ def generate():
                bytearray(encodedImage) + b'\r\n')
 
 
-def append_objs_to_img(cv2_im, inference_size, objs, labels, trackerFlag, trdata):
-    height, width, channels = cv2_im.shape
-    scale_x, scale_y = width / inference_size[0], height / inference_size[1]
+def append_objs_to_img(cv2_im, scale_x, scale_y, objs, labels, trackerFlag, trdata):
     if trackerFlag and (np.array(trdata)).size:
         for td in trdata:
             x0, y0, x1, y1, trackID = td[0].item(), td[1].item(
