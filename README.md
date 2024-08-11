@@ -77,4 +77,4 @@ While the detection server is running, you can access the stream through your we
 same network, by accessing `<IP adress>:<port number>`, as defined above. So e.g. if `detect_server.py` is running 
 on the same machine, you can access the stream through the address `127.0.0.1:4664`.
 
-On the Coral Dev Board Mini the code runs at ~ 0.09 s/frame, so ~ so framerates fo ~ 10 fps is possible. 
+On the Coral Dev Board Mini the code runs at ~ 0.09 s/frame, so framerates of ~10 fps are possible. 
