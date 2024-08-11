@@ -16,7 +16,7 @@
 
 if grep -s -q "Mendel" /etc/os-release; then
   MENDEL_VER="$(cat /etc/mendel_version)"
-  if [ [ "$MENDEL_VER" == "1.0" ] || [ "$MENDEL_VER" == "2.0" ] || [ "$MENDEL_VER" == "3.0" ] ] ; then
+  if [ "$MENDEL_VER" = "1.0" ] || [ "$MENDEL_VER" = "2.0" ] || [ "$MENDEL_VER" = "3.0" ] ; then
     echo "Your version of Mendel is not compatible with OpenCV."
     echo "You must upgrade to Mendel 4.0 or higher."
     exit 1
@@ -47,7 +47,7 @@ are not Apache. Care should be taken if using a tracker with restrictive
 licenses for end applications."
 
 read -p "Install SORT (GPLv3)? " -r
-if [ $REPLY =~ ^[Yy]$ ] ;
+if [ $REPLY != ^[Yy]$ ] ;
 then
     wget https://github.com/abewley/sort/archive/master.zip -O sort.zip
     unzip sort.zip -d ../third_party
