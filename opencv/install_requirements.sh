@@ -21,7 +21,7 @@ if grep -s -q "Mendel" /etc/os-release; then
     echo "You must upgrade to Mendel 4.0 or higher."
     exit 1
   fi
-  sudo sudo python3 -m pip install --user opencv-python-headless
+  sudo sudo python3 -m pip install opencv-python-headless==4.7.0.72
 elif grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
   RASPBIAN=$(grep VERSION_ID /etc/os-release | sed 's/VERSION_ID="\([0-9]\+\)"/\1/')
   echo "Raspbian Version: $RASPBIAN"
@@ -46,14 +46,11 @@ echo "Note that the trackers have their own licensing, many of which
 are not Apache. Care should be taken if using a tracker with restrictive
 licenses for end applications."
 
-read -p "Install SORT (GPLv3)? " -r
-if [ $REPLY != ^[Yy]$ ] ;
-then
-    wget https://github.com/abewley/sort/archive/master.zip -O sort.zip
-    unzip sort.zip -d ../third_party
-    rm sort.zip
-    sudo apt install python3-skimage
-    sudo apt install python3-dev
-    sudo python3 -m pip install -r requirements_for_sort_tracker.txt
-fi
+read -p "Install SORT (GPLv3)? (Y/N): " confirm && [[ $confirm = [yY] || $confirm = [yY][eE][sS] ]] || exit 1
+wget https://github.com/abewley/sort/archive/master.zip -O sort.zip
+unzip sort.zip -d ../third_party
+rm sort.zip
+sudo apt install python3-skimage
+sudo apt install python3-dev
+sudo python3 -m pip install -r requirements_for_sort_tracker.txt
 echo
