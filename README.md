@@ -1,6 +1,6 @@
 # Edge TPU detection and tracking web server
 
-This repo contains an adaption of the object detection code from the google coral camera eamples 
+This repo contains an adaption of the object detection code from the google coral camera examples 
 ([original repo](https://github.com/google-coral/examples-camera.git)).
 The following changes have been made:
 * included code to stream the decection result via open-cv and flask
@@ -8,8 +8,8 @@ The following changes have been made:
 If you're interested in how to get the models compiled, I highly recommend this guide: 
 [Export "SpaghettiNet" to TF-Lite, Edge TPU Models using tf1](https://gist.github.com/NobuoTsukamoto/eade17835e57a02f5414aae907293707).
 That did the trick for me.
-* included code for persistent object tracking, based on this example: [example-object-tracker](https://github.com/google-coral/example-object-tracker.git)
-* removed all the code using other frameworks (e.g. gstreamer)
+* included code for persistent object tracking based on this example: [example-object-tracker](https://github.com/google-coral/example-object-tracker.git)
+* removed all code using other frameworks (e.g. gstreamer)
 
 Code has been tested on the coral dev board mini, but should run on any coral devicesuch as (no guarantees, though!): 
 [USB Accelerator](https://coral.withgoogle.com/products/accelerator) or
@@ -38,15 +38,21 @@ Code has been tested on the coral dev board mini, but should run on any coral de
     ```
     cd opencv
 
-    sh install_requriements.sh
+    sh install_requirements.sh
     ```
 
 ## Running the code
 
-To run the detection server wkithout object tracking, open a console on your device and run:
+To run the detection server without object tracking, open a console on your device and run:
 ```
 python3 opencv/detect_server.py --model all_models/spaghettinet_l_optimized_nms.tflite \
   --labels all_models/coco_labels.txt
+```
+
+To run the detection server with object tracking, open a console on your device and run:
+```
+python3 opencv/detect_server.py --model all_models/spaghettinet_l_optimized_nms.tflite \
+  --labels all_models/coco_labels.txt --tracking sort
 ```
 
 The code allows for the following optional flags:
@@ -62,7 +68,7 @@ is `coco_labels.txt`.
 * `--threshold`: Threshold value for detection score. Only Scores above this vlaue will be considered valid 
 detections. Default value is 0.5.
 * `--tracker`: Name of the Object Tracker To be used. Default is `None`. Possible choices are 
-`None` or `'sort'`.
+`None` or `sort`.
 * `--ip`: IP address of the streaming server. Default is `'0.0.0.0'`, meaning the stream will be set up at localhost.
 * `--port`: Prot number on which to stream. Valid entries are between 1024 to 65535. It is recommended to use a port 
 that is otherwise free (check your device port configuration). Default is 4664
@@ -70,3 +76,5 @@ that is otherwise free (check your device port configuration). Default is 4664
 While the detection server is running, you can access the stream through your web browser from any machine in the 
 same network, by accessing `<IP adress>:<port number>`, as defined above. So e.g. if `detect_server.py` is running 
 on the same machine, you can access the stream through the address `127.0.0.1:4664`.
+
+On the Coral Dev Board Mini the code runs at ~ 0.09 s/frame, so ~ so framerates fo ~ 10 fps is possible. 
