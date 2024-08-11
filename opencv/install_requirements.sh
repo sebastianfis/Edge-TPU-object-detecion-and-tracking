@@ -21,7 +21,7 @@ if grep -s -q "Mendel" /etc/os-release; then
     echo "You must upgrade to Mendel 4.0 or higher."
     exit 1
   fi
-  sudo pip3 install opencv-python-headless==4.7.0.72
+  pip install opencv-python-headless
 elif grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
   RASPBIAN=$(grep VERSION_ID /etc/os-release | sed 's/VERSION_ID="\([0-9]\+\)"/\1/')
   echo "Raspbian Version: $RASPBIAN"
