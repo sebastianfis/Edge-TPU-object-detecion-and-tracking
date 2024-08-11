@@ -66,7 +66,7 @@ is `coco_labels.txt`.
 * `--top_k`: Number of objects with the highest score to display. Default value is 5.
 * `--camera_idx`: Index of which video source to use. Default value is 1.
 * `--threshold`: Threshold value for detection score. Only Scores above this vlaue will be considered valid 
-detections. Default value is 0.5.
+detections. Default value is 0.6.
 * `--tracker`: Name of the Object Tracker To be used. Default is `None`. Possible choices are 
 `None` or `sort`.
 * `--ip`: IP address of the streaming server. Default is `'0.0.0.0'`, meaning the stream will be set up at localhost.
