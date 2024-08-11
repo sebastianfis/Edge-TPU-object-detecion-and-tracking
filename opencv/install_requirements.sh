@@ -16,7 +16,7 @@
 
 if grep -s -q "Mendel" /etc/os-release; then
   MENDEL_VER="$(cat /etc/mendel_version)"
-  if [ "$MENDEL_VER" == "1.0" || "$MENDEL_VER" == "2.0" || "$MENDEL_VER" == "3.0" ]; then
+  if [ "$MENDEL_VER" == "1.0" || "$MENDEL_VER" == "2.0" || "$MENDEL_VER" == "3.0" ] ; then
     echo "Your version of Mendel is not compatible with OpenCV."
     echo "You must upgrade to Mendel 4.0 or higher."
     exit 1
@@ -25,7 +25,7 @@ if grep -s -q "Mendel" /etc/os-release; then
 elif grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
   RASPBIAN=$(grep VERSION_ID /etc/os-release | sed 's/VERSION_ID="\([0-9]\+\)"/\1/')
   echo "Raspbian Version: $RASPBIAN"
-  if [ "$RASPBIAN" -ge "10" ]; then
+  if [ "$RASPBIAN" -ge "10" ] ; then
     # Lock to version due to bug: https://github.com/piwheels/packages/issues/59
     sudo pip3 install opencv-contrib-python==4.1.0.25 filterpy==1.1.0 lap==0.4.0
     sudo apt-get -y install libjasper1 libhdf5-1* libqtgui4 libatlas-base-dev libqt4-test
@@ -47,7 +47,7 @@ are not Apache. Care should be taken if using a tracker with restrictive
 licenses for end applications."
 
 read -p "Install SORT (GPLv3)? " -n 1 -r
-if [ $REPLY =~ ^[Yy]$ ]
+if [ $REPLY =~ ^[Yy]$ ] ;
 then
     wget https://github.com/abewley/sort/archive/master.zip -O sort.zip
     unzip sort.zip -d ../third_party
