@@ -131,7 +131,7 @@ def run_server(interpreter, labels, args):
 def main():
     default_model_dir = 'all_models'
     default_model = 'spaghettinet_l_edgetpu.tflite'
-    default_labels = 'coco_labels_de.txt'
+    default_labels = 'coco_labels.txt'
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--ip", type=str, default='0.0.0.0', help="ip address of the device")
     parser.add_argument("-o", "--port", type=int, default='4664', help="port number of the server (1024 to 65535)")
@@ -139,7 +139,7 @@ def main():
                         default=os.path.join(default_model_dir, default_model))
     parser.add_argument('--labels', help='label file path',
                         default=os.path.join(default_model_dir, default_labels))
-    parser.add_argument('--top_k', type=int, default=3,
+    parser.add_argument('--top_k', type=int, default=5,
                         help='number of categories with highest score to display')
     parser.add_argument('--camera_idx', type=int, help='Index of which video source to use. ', default=1)
     parser.add_argument('--threshold', type=float, default=0.5,
