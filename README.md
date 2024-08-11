@@ -33,12 +33,12 @@ Code has been tested on the coral dev board mini, but should run on any coral de
     git clone https://github.com/sebastianfis/Edge-TPU-object-detecion-and-tracking.git
     ```
 
-3. Install requirements for sort tracker:
+3. Install requirements:
 
     ```
     cd opencv
 
-    sh install_requirements.sh
+    bash install_requirements.sh
     ```
 
 ## Running the code
