@@ -16,12 +16,12 @@
 
 if grep -s -q "Mendel" /etc/os-release; then
   MENDEL_VER="$(cat /etc/mendel_version)"
-  if [ "$MENDEL_VER" == "1.0" ] || [ "$MENDEL_VER" == "2.0" ] || [ "$MENDEL_VER" == "3.0" ] ; then
+  if [ [ "$MENDEL_VER" == "1.0" ] || [ "$MENDEL_VER" == "2.0" ] || [ "$MENDEL_VER" == "3.0" ] ] ; then
     echo "Your version of Mendel is not compatible with OpenCV."
     echo "You must upgrade to Mendel 4.0 or higher."
     exit 1
   fi
-  sudo sudo pip3 -user install opencv-python-headless
+  sudo sudo python3 -m pip install --user opencv-python-headless
 elif grep -s -q "Raspberry Pi" /sys/firmware/devicetree/base/model; then
   RASPBIAN=$(grep VERSION_ID /etc/os-release | sed 's/VERSION_ID="\([0-9]\+\)"/\1/')
   echo "Raspbian Version: $RASPBIAN"
